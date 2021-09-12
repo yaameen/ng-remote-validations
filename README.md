@@ -1,27 +1,107 @@
-# NgRemoteValidations
+# Ng Remote Validations
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 12.2.1.
+A simple utility to ease presentation of server side validation errors 
 
-## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+- [Installation](#installation)
+- [Setup](#setup)
+- [Usage](#usage)
+- [License](#license)
 
-## Code scaffolding
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-## Build
+## Installation
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```bash
+npm i ng-remote-validations
+```
 
-## Running unit tests
+## Setup
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Simply import **NgRemoteValidationsModule** from the library to your **app.module.ts** and specify the global configurations as shown in the example below.
 
-## Running end-to-end tests
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+```typescript
 
-## Further help
+import { NgRemoteValidationsModule } from 'ng-remote-validations';
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+@NgModule({
+  imports: [
+    // ....
+    NgRemoteValidationsModule,
+  ],
+  providers: []
+})
+export class AppModule {
+}
+```
+
+## Usage
+
+Use with angular reactive forms
+
+```html
+<form [formGroup]='form'>
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <ng-file-input required formControlName='name'></ng-file-input>
+      <mat-error validate='name'></mat-error>
+    </mat-form-field>
+  </form>
+```
+
+Import the remote validation service to wherever you might want to obtain the errors. 
+The interceptor is a sound option for the purpose and follows an example on how you may use this with an interceptor.
+
+```ts
+@Injectable()
+export class HttpInterceptorInterceptor implements HttpInterceptor {
+
+  constructor(
+    //   ...
+    private remoteValidationService: NgRemoteValidationsService,
+  ) {}
+
+    //   ....
+  intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+
+			// ...
+			return next.handle(request) 
+    .pipe(
+      tap(
+							(resp: any) => {},
+							(err: any) => {
+								// Populate the errors
+								if( err.status == 422  || err.status == 406 ) {
+											if(err.error.errors) {
+													this.serverValidations.refresh(err.error.errors);
+											}
+								}
+							},
+						)
+				);
+		}
+}
+```
+
+## License 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  
